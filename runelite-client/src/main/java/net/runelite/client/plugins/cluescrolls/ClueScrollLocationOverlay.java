@@ -26,35 +26,42 @@
  */
 package net.runelite.client.plugins.cluescrolls;
 
+import java.awt.BasicStroke;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Point;
+import java.awt.Polygon;
 import java.time.Duration;
 import java.time.Instant;
 
 import javax.inject.Inject;
 
-import net.runelite.api.Client;
-import net.runelite.api.ItemComposition;
+import net.runelite.api.Actor;
+import net.runelite.api.NPC;
+import net.runelite.api.queries.NPCQuery;
 import net.runelite.client.ui.overlay.Overlay;
+import net.runelite.client.ui.overlay.OverlayLayer;
 import net.runelite.client.ui.overlay.OverlayPosition;
 import net.runelite.client.ui.overlay.components.PanelComponent;
+import net.runelite.client.util.QueryRunner;
 
-public class ClueScrollOverlay extends Overlay
+public class ClueScrollLocationOverlay extends Overlay
 {
 	private static final Duration WAIT_DURATION = Duration.ofMinutes(4);
 
-	private final Client client;
+	private final QueryRunner queryRunner;
 	private final PanelComponent panelComponent = new PanelComponent();
 
 	ClueScroll clue;
 	Instant clueTimeout;
 
 	@Inject
-	public ClueScrollOverlay(Client client)
+	public ClueScrollLocationOverlay(QueryRunner queryRunner)
 	{
-		setPosition(OverlayPosition.TOP_LEFT);
-		this.client = client;
+		setPosition(OverlayPosition.DYNAMIC);
+		setLayer(OverlayLayer.ABOVE_SCENE);
+		this.queryRunner = queryRunner;
 	}
 
 	@Override
@@ -69,42 +76,58 @@ public class ClueScrollOverlay extends Overlay
 		{
 			return null;
 		}
-				
-		if(clue.getType().equals(ClueScrollType.EMOTE)) {
-			panelComponent.getLines().clear();
-			panelComponent.setTitle("Required items");
-	
-			if (clue.getIds().length == 0)
-			{
-				panelComponent.getLines().add(new PanelComponent.Line("None", ""));
-			}
-			else
-			{
-				for (int id : clue.getIds())
-				{
-					ItemComposition clueItem = client.getItemDefinition(id);
-	
-					if (clueItem == null)
-					{
-						continue;
-					}
-	
-					panelComponent.getLines().add(new PanelComponent.Line(clueItem.getName(), ""));
-				}
-			}
-	
-			return panelComponent.render(graphics, parent);
-		} else {
-			panelComponent.getLines().clear();
-			panelComponent.setTitle("Talk to:");
-			
-			panelComponent.getLines().add(new PanelComponent.Line(clue.getNpc(), ""));
-			
-			if(!clue.getAnswer().isEmpty()) {
-				panelComponent.getLines().add(new PanelComponent.Line("Answer: " + clue.getAnswer(), ""));
-			}
-	
-			return panelComponent.render(graphics, parent);
+
+		panelComponent.getLines().clear();
+		panelComponent.setTitle("Talk to:");
+
+		NPCQuery npcQuery = new NPCQuery().idEquals(clue.getIds());
+		NPC[] npcs = queryRunner.runQuery(npcQuery);
+		// String debug = client.getNpcs().stream().map(n -> n.getId() +
+		// n.getName()).collect(Collectors.joining(" "));
+		// System.out.println(debug);
+		for (NPC npc : npcs)
+		{
+			String text = npc.getName();
+
+			drawNpc(graphics, npc, text);
+		}
+
+		return null;
+	}
+
+	private void drawNpc(Graphics2D graphics, Actor actor, String text)
+	{
+		Polygon poly = actor.getCanvasTilePoly();
+		if (poly != null)
+		{
+			graphics.setColor(Color.CYAN);
+			graphics.setStroke(new BasicStroke(2));
+			graphics.drawPolygon(poly);
+			graphics.setColor(new Color(0, 0, 0, 50));
+			graphics.fillPolygon(poly);
+		}
+
+		net.runelite.api.Point minimapLocation = actor.getMinimapLocation();
+		if (minimapLocation != null)
+		{
+			graphics.setColor(Color.CYAN);
+			graphics.fillOval(minimapLocation.getX(), minimapLocation.getY(), 5, 5);
+			graphics.setColor(Color.WHITE);
+			graphics.setStroke(new BasicStroke(1));
+			graphics.drawOval(minimapLocation.getX(), minimapLocation.getY(), 5, 5);
+		}
+
+		net.runelite.api.Point textLocation = actor.getCanvasTextLocation(graphics, text, actor.getLogicalHeight());
+		if (textLocation != null)
+		{
+			int x = textLocation.getX();
+			int y = textLocation.getY();
+
+			graphics.setColor(Color.BLACK);
+			graphics.drawString(text, x + 1, y + 1);
+
+			graphics.setColor(Color.CYAN);
+			graphics.drawString(text, x, y);
 		}
 	}
 }

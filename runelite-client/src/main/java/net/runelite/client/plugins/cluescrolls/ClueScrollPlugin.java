@@ -28,6 +28,9 @@ package net.runelite.client.plugins.cluescrolls;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Arrays;
+import java.util.Collection;
+
 import javax.inject.Inject;
 import net.runelite.api.Client;
 import net.runelite.api.GameState;
@@ -36,10 +39,9 @@ import net.runelite.api.widgets.WidgetInfo;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.task.Schedule;
+import net.runelite.client.ui.overlay.Overlay;
 
-@PluginDescriptor(
-	name = "Clue scroll"
-)
+@PluginDescriptor(name = "Clue scroll")
 public class ClueScrollPlugin extends Plugin
 {
 	@Inject
@@ -48,16 +50,22 @@ public class ClueScrollPlugin extends Plugin
 	@Inject
 	private ClueScrollOverlay clueScrollOverlay;
 
+	@Inject
+	private ClueScrollLocationOverlay clueScrollLocationOverlay;
+
+	// @Override
+	// public ClueScrollOverlay getOverlay()
+	// {
+	// return clueScrollOverlay;
+	// }
+
 	@Override
-	public ClueScrollOverlay getOverlay()
+	public Collection<Overlay> getOverlays()
 	{
-		return clueScrollOverlay;
+		return Arrays.asList(clueScrollOverlay, clueScrollLocationOverlay);
 	}
 
-	@Schedule(
-		period = 600,
-		unit = ChronoUnit.MILLIS
-	)
+	@Schedule(period = 600, unit = ChronoUnit.MILLIS)
 	public void checkForClues()
 	{
 		if (client.getGameState() != GameState.LOGGED_IN)
@@ -72,12 +80,14 @@ public class ClueScrollPlugin extends Plugin
 			return;
 		}
 
-		//remove line breaks and also the rare occasion where there are double line breaks
-		ClueScroll clue = ClueScroll.forText(clueScroll.getText().replaceAll("<br>", " ").replaceAll("  ", " ").toLowerCase());
+		// remove line breaks and also the rare occasion where there are double
+		// line breaks
+		ClueScroll clue = ClueScroll
+				.forText(clueScroll.getText().replaceAll("<br>", " ").replaceAll("  ", " ").toLowerCase());
 
 		if (clue == null)
 		{
-			clueScrollOverlay.clue = null;
+			// clueScrollOverlay.clue = null;
 			return;
 		}
 
@@ -86,18 +96,29 @@ public class ClueScrollPlugin extends Plugin
 			clueScrollOverlay.clue = clue;
 
 			clueScrollOverlay.clueTimeout = Instant.now();
+
 			return;
+		} else if (clue.getType() == ClueScrollType.CIPHER)
+		{
+			clueScrollOverlay.clue = clue;
+			clueScrollOverlay.clueTimeout = Instant.now();
+
+			clueScrollLocationOverlay.clue = clue;
+			clueScrollLocationOverlay.clueTimeout = Instant.now();
+		} else
+		{
+			clueScrollOverlay.clue = null;
+			clueScrollLocationOverlay.clue = null;
 		}
 
-		clueScrollOverlay.clue = null;
-
-		//check for <col=ffffff> which tells us if the string has already been built
+		// check for <col=ffffff> which tells us if the string has already been
+		// built
 		if (clueScroll.getText().contains("<col=ffffff>"))
 		{
 			return;
 		}
 
-		//Build widget text
+		// Build widget text
 		StringBuilder clueText = new StringBuilder();
 
 		clueText.append(clueScroll.getText()).append("<br><br>");

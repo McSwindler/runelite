@@ -28,6 +28,9 @@ package net.runelite.client.plugins.cluescrolls;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import net.runelite.api.NpcID;
+
 import static net.runelite.api.ItemID.*;
 import static net.runelite.client.plugins.cluescrolls.ClueScrollType.ANAGRAM;
 import static net.runelite.client.plugins.cluescrolls.ClueScrollType.CHALLENGE;
@@ -563,19 +566,19 @@ public enum ClueScroll
 	CLUE524("How many fishing cranes can you find around here?", "5", CHALLENGE),
 	CLUE525("How many chairs are there in the Rising Sun?", "18", CHALLENGE),
 	CLUE526("What is the combined slayer requirement of every monster in the slayer cave?", "302", CHALLENGE),
-	CLUE527("The cipher reveals who to speak to next: BMJ UIF LFCBC TFMMFS", "Ali the Kebab seller", "Pollnivneach", "399", CIPHER),
-	CLUE528("The cipher reveals who to speak to next: GUHCHO", "Drezel", "Paterdomus", "7", CIPHER),
-	CLUE529("The cipher reveals who to speak to next: ZCZL", "Adam", "Outside Lumbridge castle", "666", CIPHER),
-	CLUE530("The cipher reveals who to speak to next: ZHLUG ROG PDQ", "Weird Old Man", "Kalphite Lair entrance", "150", CIPHER),
-	CLUE531("The cipher reveals who to speak to next: ECRVCKP MJCNGF", "Captain Khaled", "Large eastern building in Piscarilius House", "5", CIPHER),
-	CLUE532("The cipher reveals who to speak to next: OVEXON", "Eluned", "Outside Lletya", "53,000", CIPHER),
-	CLUE533("The cipher reveals who to speak to next: VTYR APCNTGLW", "King Percival", "Fisher Realm", "5", CIPHER),
-	CLUE534("The cipher reveals who to speak to next: UZZU MUJHRKYYKJ", "Otto Godblessed", "Otto's Grotto", "3", CIPHER),
-	CLUE535("The cipher reveals who to speak to next: USBJCPSO", "Traiborn", "Wizard's Tower, 2nd floor", "3150", CIPHER),
-	CLUE536("The cipher reveals who to speak to next: HCKTA IQFHCVJGT", "Fairy Godfather", "Zanaris throne room", "64", CIPHER),
-	CLUE537("The cipher reveals who to speak to next: ZSBKDO ZODO", "Pirate Pete", "Dock northeast of the Ectofunctus", CIPHER),
-	CLUE538("The cipher reveals who to speak to next: GBJSZ RVFFO", "Fairy Queen", "Fairy Resistance Hideout", CIPHER),
-	CLUE539("The cipher reveals who to speak to next: QSPGFTTPS HSBDLMFCPOF", "Professor Gracklebone", "Arceuus House Library, ground floor", "9", CIPHER);
+	CLUE527(new int[] { NpcID.ALI_THE_KEBAB_SELLER }, "The cipher reveals who to speak to next: BMJ UIF LFCBC TFMMFS", "Ali the Kebab seller", "Pollnivneach", "399", CIPHER),
+	CLUE528(new int[] { NpcID.DREZEL, NpcID.DREZEL_3489 }, "The cipher reveals who to speak to next: GUHCHO", "Drezel", "Paterdomus", "7", CIPHER),
+	CLUE529(new int[] { NpcID.ADAM }, "The cipher reveals who to speak to next: ZCZL", "Adam", "Outside Lumbridge castle", "666", CIPHER),
+	CLUE530(new int[] { NpcID.WEIRD_OLD_MAN }, "The cipher reveals who to speak to next: ZHLUG ROG PDQ", "Weird Old Man", "Kalphite Lair entrance", "150", CIPHER),
+	CLUE531(new int[] { NpcID.CAPTAIN_KHALED, NpcID.CAPTAIN_KHALED_6972, NpcID.JAMES, 11277, 6764 }, "The cipher reveals who to speak to next: ECRVCKP MJCNGF", "Captain Khaled", "Large eastern building in Piscarilius House", "5", CIPHER),
+	CLUE532(new int[] { NpcID.ELUNED, NpcID.ELUNED_5304 }, "The cipher reveals who to speak to next: OVEXON", "Eluned", "Outside Lletya", "53,000", CIPHER),
+	CLUE533(new int[] { NpcID.KING_PERCIVAL }, "The cipher reveals who to speak to next: VTYR APCNTGLW", "King Percival", "Fisher Realm", "5", CIPHER),
+	CLUE534(new int[] { NpcID.OTTO_GODBLESSED, NpcID.OTTO_GODBLESSED_2915 }, "The cipher reveals who to speak to next: UZZU MUJHRKYYKJ", "Otto Godblessed", "Otto's Grotto", "3", CIPHER),
+	CLUE535(new int[] { NpcID.TRAIBORN }, "The cipher reveals who to speak to next: USBJCPSO", "Traiborn", "Wizard's Tower, 2nd floor", "3150", CIPHER),
+	CLUE536(new int[] { NpcID.FAIRY_GODFATHER, NpcID.FAIRY_GODFATHER_5837 }, "The cipher reveals who to speak to next: HCKTA IQFHCVJGT", "Fairy Godfather", "Zanaris throne room", "64", CIPHER),
+	CLUE537(new int[] { NpcID.PIRATE_PETE }, "The cipher reveals who to speak to next: ZSBKDO ZODO", "Pirate Pete", "Dock northeast of the Ectofunctus", "", CIPHER),
+	CLUE538(new int[] { NpcID.FAIRY_QUEEN, NpcID.FAIRY_QUEEN_1842 }, "The cipher reveals who to speak to next: GBJSZ RVFFO", "Fairy Queen", "Fairy Resistance Hideout", "", CIPHER),
+	CLUE539(new int[] { NpcID.PROFESSOR_GRACKLEBONE }, "The cipher reveals who to speak to next: QSPGFTTPS HSBDLMFCPOF", "Professor Gracklebone", "Arceuus House Library, ground floor", "9", CIPHER);
 
 	private static final Map<String, ClueScroll> clues = new HashMap<>();
 
