@@ -32,6 +32,7 @@ import java.util.Arrays;
 import java.util.Collection;
 
 import javax.inject.Inject;
+
 import net.runelite.api.Client;
 import net.runelite.api.GameState;
 import net.runelite.api.widgets.Widget;
@@ -82,11 +83,20 @@ public class ClueScrollPlugin extends Plugin
 
 		// remove line breaks and also the rare occasion where there are double
 		// line breaks
+		String rawText = clueScroll.getText().replaceAll("<br>", " ").replaceAll("  ", " ").toLowerCase();
 		ClueScroll clue = ClueScroll
-				.forText(clueScroll.getText().replaceAll("<br>", " ").replaceAll("  ", " ").toLowerCase());
-
+				.forText(rawText);
+		System.out.println(client.getLocalPlayer().getWorldLocation());
 		if (clue == null)
 		{
+			CoordinateClueScroll coordClue = CoordinateClueScroll.parseCoordinateClue(rawText);
+			if (coordClue != null){
+				clueScrollLocationOverlay.coordinate = coordClue;
+				clueScrollLocationOverlay.clueTimeout = Instant.now();
+			}
+			
+//			CoordinateClueScroll location = CoordinateClueScroll.calculateCoordinate(client.getLocalPlayer().getWorldLocation());
+//			System.out.println(location.toString());
 			// clueScrollOverlay.clue = null;
 			return;
 		}
@@ -96,6 +106,9 @@ public class ClueScrollPlugin extends Plugin
 			clueScrollOverlay.clue = clue;
 
 			clueScrollOverlay.clueTimeout = Instant.now();
+			
+			clueScrollLocationOverlay.clue = null;
+			clueScrollLocationOverlay.coordinate = null;
 
 			return;
 		} else if (clue.getType() == ClueScrollType.CIPHER)
@@ -105,10 +118,13 @@ public class ClueScrollPlugin extends Plugin
 
 			clueScrollLocationOverlay.clue = clue;
 			clueScrollLocationOverlay.clueTimeout = Instant.now();
+			
+			clueScrollLocationOverlay.coordinate = null;
 		} else
 		{
 			clueScrollOverlay.clue = null;
 			clueScrollLocationOverlay.clue = null;
+			clueScrollLocationOverlay.coordinate = null;
 		}
 
 		// check for <col=ffffff> which tells us if the string has already been

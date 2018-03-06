@@ -38,7 +38,10 @@ import java.time.Instant;
 import javax.inject.Inject;
 
 import net.runelite.api.Actor;
+import net.runelite.api.Client;
+import net.runelite.api.GameState;
 import net.runelite.api.NPC;
+import net.runelite.api.Perspective;
 import net.runelite.api.queries.NPCQuery;
 import net.runelite.client.ui.overlay.Overlay;
 import net.runelite.client.ui.overlay.OverlayLayer;
@@ -50,22 +53,41 @@ public class ClueScrollLocationOverlay extends Overlay
 {
 	private static final Duration WAIT_DURATION = Duration.ofMinutes(4);
 
+	private final Client client;
 	private final QueryRunner queryRunner;
 	private final PanelComponent panelComponent = new PanelComponent();
 
 	ClueScroll clue;
+	CoordinateClueScroll coordinate;
 	Instant clueTimeout;
 
 	@Inject
-	public ClueScrollLocationOverlay(QueryRunner queryRunner)
+	public ClueScrollLocationOverlay(Client client, QueryRunner queryRunner)
 	{
 		setPosition(OverlayPosition.DYNAMIC);
 		setLayer(OverlayLayer.ABOVE_SCENE);
+		this.client = client;
 		this.queryRunner = queryRunner;
 	}
 
 	@Override
 	public Dimension render(Graphics2D graphics, Point parent)
+	{
+		if (client.getGameState() != GameState.LOGGED_IN)
+		{
+			return null;
+		}
+		if (clue != null)
+		{
+			return renderNpcClue(graphics, parent);
+		} else if (coordinate != null)
+		{
+			return renderCoordClue(graphics, parent);
+		}
+		return null;
+	}
+
+	public Dimension renderNpcClue(Graphics2D graphics, Point parent)
 	{
 		if (clue == null)
 		{
@@ -90,6 +112,31 @@ public class ClueScrollLocationOverlay extends Overlay
 			String text = npc.getName();
 
 			drawNpc(graphics, npc, text);
+		}
+
+		return null;
+	}
+
+	public Dimension renderCoordClue(Graphics2D graphics, Point parent)
+	{
+		if (coordinate == null)
+		{
+			return null;
+		}
+
+		if (clueTimeout == null || Instant.now().compareTo(clueTimeout.plus(WAIT_DURATION)) >= 0)
+		{
+			return null;
+		}
+
+		Polygon poly = Perspective.getCanvasTilePoly(client, Perspective.worldToLocal(client, coordinate.toPoint()));
+		if (poly != null)
+		{
+			graphics.setColor(Color.CYAN);
+			graphics.setStroke(new BasicStroke(2));
+			graphics.drawPolygon(poly);
+			graphics.setColor(new Color(0, 0, 0, 50));
+			graphics.fillPolygon(poly);
 		}
 
 		return null;
