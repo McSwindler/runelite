@@ -29,6 +29,8 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
+
+import net.runelite.cache.definitions.ItemDefinition;
 import net.runelite.cache.definitions.NpcDefinition;
 import net.runelite.cache.definitions.exporters.NpcExporter;
 import net.runelite.cache.definitions.loaders.NpcLoader;
@@ -72,6 +74,11 @@ public class NpcManager
 	public List<NpcDefinition> getNpcs()
 	{
 		return npcs;
+	}
+	
+	public NpcDefinition getNpc(int npcId)
+	{
+		return npcs.get(npcId);
 	}
 
 	public void dump(File out) throws IOException
