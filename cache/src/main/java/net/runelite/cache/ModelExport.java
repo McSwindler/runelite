@@ -4,12 +4,15 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.charset.Charset;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+
+import com.google.common.io.Files;
 
 import net.runelite.cache.definitions.FrameDefinition;
 import net.runelite.cache.definitions.FramemapDefinition;
@@ -78,7 +81,7 @@ public class ModelExport
 			dumper.load();
 			ItemDefinition def = dumper.getItem(itemId);
 			
-			exportModels(store, def.name, def.inventoryModel, def.femaleModel0, def.maleModel0);
+			exportModels(store, def.name, null, def.inventoryModel, def.femaleModel0, def.maleModel0);
 		} else if (cmd.hasOption("npc")) {
 			NpcManager dumper = new NpcManager(store);
 			dumper.load();
@@ -118,10 +121,16 @@ public class ModelExport
 			
 //			getFrame(store, anim);
 			
-			SequenceDefinition frameMap = getAnim(store, anim);//135004182
+			FrameDefinition frame = null;
+			if(anim > -1) {
+				SequenceDefinition sequence = getAnim(store, anim);//135004182
+				
+				frame = getFrame(store, sequence.frameIDs[0]);
+			}
 			
-			exportModels(store, def.name, def.models);
-			exportModels(store, def.name, def.models_2);
+			
+			exportModels(store, def.name, frame, def.models);
+			exportModels(store, def.name, null, def.models_2);
 		} else if (cmd.hasOption("object")) {
 			ObjectManager dumper = new ObjectManager(store);
 			dumper.load();
@@ -132,16 +141,21 @@ public class ModelExport
 				objectId = Integer.valueOf(objectVal);
 			} catch (NumberFormatException e) {
 				for(ObjectDefinition object : dumper.getObjects()) {
-					if(object.getName().equalsIgnoreCase(objectVal)) {
+					if(object.getName().contains(objectVal)) {
 						if(objectId != null) {
-							System.out.println("Duplicate Object found: " + object.getId());
+							System.out.println("Duplicate Object found: " + object.getName() + " - " + object.getId());
 						} else {
-							System.out.println("Object found: " + object.getId());
+							System.out.println("Object found: " + object.getName() + " - " + object.getId());
 							objectId = object.getId();
 						}
 					}
 				}
 			}
+			
+//			Object found: 31912
+//			Duplicate Object found: 31977
+//			Duplicate Object found: 31978
+//			Duplicate Object found: 31985
 			
 //			NPC found: 8026
 //			Duplicate NPC found: 8058
@@ -158,7 +172,7 @@ public class ModelExport
 			
 			ObjectDefinition def = dumper.getObject(objectId);
 			
-			exportModels(store, def.getName(), def.getObjectModels());
+			exportModels(store, def.getName(), null, def.getObjectModels());
 		}
 	}
 	
@@ -181,21 +195,34 @@ public class ModelExport
 		return null;
 	}
 	
-	private static void getFrame(Store store, int frameId) throws IOException {
-		Index index = store.getIndex(IndexType.FRAMEMAPS);
+	private static FrameDefinition getFrame(Store store, int frameId) throws IOException {
 		Storage storage = store.getStorage();
-		FramemapLoader fmLoader = new FramemapLoader();
-		FrameLoader loader = new FrameLoader();
-		for(Archive archive : index.getArchives()) {
+		Index frameIndex = store.getIndex(IndexType.FRAMES);
+		
+		FramemapManager fmManager = new FramemapManager(store);
+		fmManager.load();
+		FrameLoader frameLoader = new FrameLoader();
+		
+
+		for (Archive archive : frameIndex.getArchives())
+		{
 			byte[] archiveData = storage.loadArchive(archive);
 			ArchiveFiles files = archive.getFiles(archiveData);
 			for(FSFile f : files.getFiles()) {
-				FramemapDefinition map = fmLoader.load(f.getFileId(), f.getContents());
 				
-				FrameDefinition frame = loader.load(map, f.getContents());
-				System.out.println(frame.indexFrameIds);
+				byte[] contents = f.getContents();
+				
+				int framemapArchiveId = (contents[0] & 0xff) << 8 | contents[1] & 0xff;
+
+				FramemapDefinition framemap = fmManager.getNpc(framemapArchiveId);
+									
+				int fid = archive.getArchiveId() << 16 | f.getFileId();
+				if(frameId == fid) 
+					return frameLoader.load(frameId, framemap, contents);
 			}
 		}
+		
+		return null;
 	}
 	
 	private static Store loadStore(String cache) throws IOException
@@ -205,15 +232,15 @@ public class ModelExport
 		return store;
 	}
 	
-	private static void exportModels(Store store, String tag, int...modelIds) throws IOException {
+	private static void exportModels(Store store, String tag, FrameDefinition frame, int...modelIds) throws IOException {
 		if(modelIds == null)
 			return;
 		for(int id : modelIds) {
-			exportModel(store, id, String.valueOf(id));
+			exportModel(store, frame, id, String.valueOf(id));
 		}
 	}
 	
-	private static void exportModel(Store store, int modelId, String tag) throws IOException {
+	private static void exportModel(Store store, FrameDefinition frame, int modelId, String tag) throws IOException {
 		if(modelId < 0)
 			return;
 		
@@ -221,11 +248,17 @@ public class ModelExport
 		tm.load();
 		
 		ModelDefinition model = getModel(store, modelId);
+		model.rotate4();
+		if(frame != null) {
+			//model.animate(frame);
+			model.computeNormals();
+		}
 		ObjExporter exporter = new ObjExporter(tm, model);
 		try (PrintWriter objWriter = new PrintWriter(new FileWriter(new File(tag + ".obj")));
 			PrintWriter mtlWriter = new PrintWriter(new FileWriter(new File(tag + ".mtl"))))
 		{
 			exporter.export(objWriter, mtlWriter);
+			System.out.println("Saved " + tag + ".obj");
 		}
 	}
 	

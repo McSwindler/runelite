@@ -26,6 +26,7 @@ package net.runelite.cache.definitions;
 
 public class FrameDefinition
 {
+	public int frameId;
 	public FramemapDefinition framemap;
 	public int[] translator_x;
 	public int[] translator_y;
