@@ -39,7 +39,6 @@ import org.junit.Test;
 public class ObjExporterTest
 {
 	@Test
-	@Ignore
 	public void testExport() throws Exception
 	{
 		try (Store store = new Store(StoreLocation.LOCATION))

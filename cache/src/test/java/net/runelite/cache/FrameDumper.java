@@ -24,26 +24,30 @@
  */
 package net.runelite.cache;
 
-import com.google.common.io.Files;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.List;
+
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.io.Files;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
 import net.runelite.cache.definitions.FrameDefinition;
 import net.runelite.cache.definitions.FramemapDefinition;
 import net.runelite.cache.definitions.loaders.FrameLoader;
 import net.runelite.cache.definitions.loaders.FramemapLoader;
 import net.runelite.cache.fs.Archive;
+import net.runelite.cache.fs.ArchiveFiles;
+import net.runelite.cache.fs.FSFile;
 import net.runelite.cache.fs.Index;
 import net.runelite.cache.fs.Storage;
 import net.runelite.cache.fs.Store;
-import org.junit.Rule;
-import org.junit.rules.TemporaryFolder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class FrameDumper
 {
@@ -54,7 +58,7 @@ public class FrameDumper
 
 	private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
-	//@Test
+	@Test
 	public void extract() throws IOException
 	{
 		File base = StoreLocation.LOCATION,
@@ -72,27 +76,43 @@ public class FrameDumper
 
 			for (Archive archive : frameIndex.getArchives())
 			{
-				List<FrameDefinition> frames = new ArrayList<>();
 
 				byte[] archiveData = storage.loadArchive(archive);
-				byte[] contents = archive.decompress(archiveData);
+				ArchiveFiles files = archive.getFiles(archiveData);
+				for(FSFile f : files.getFiles()) {
+					byte[] contents = f.getContents();
+					
+					int framemapArchiveId = (contents[0] & 0xff) << 8 | contents[1] & 0xff;
+					
+					Archive framemapArchive = framemapIndex.getArchives().get(framemapArchiveId);
+					archiveData = storage.loadArchive(framemapArchive);
+					byte[] framemapContents = framemapArchive.decompress(archiveData);
 
-				int framemapArchiveId = (contents[0] & 0xff) << 8 | contents[1] & 0xff;
+					FramemapLoader fmloader = new FramemapLoader();
+					FramemapDefinition framemap = fmloader.load(0, framemapContents);
+					
+					FrameLoader frameLoader = new FrameLoader();
+					FrameDefinition frame = frameLoader.load(framemap, contents);
+					
+					Files.write(gson.toJson(frame), new File(outDir, f.getFileId() + ".json"), Charset.defaultCharset());
+					++count;
+				}
+//				byte[] contents = archive.decompress(archiveData);
+//
+//				int framemapArchiveId = (contents[0] & 0xff) << 8 | contents[1] & 0xff;
+//
+//				Archive framemapArchive = framemapIndex.getArchives().get(framemapArchiveId);
+//				archiveData = storage.loadArchive(framemapArchive);
+//				byte[] framemapContents = framemapArchive.decompress(archiveData);
+//
+//				FramemapLoader fmloader = new FramemapLoader();
+//				FramemapDefinition framemap = fmloader.load(0, framemapContents);
+//
+//				FrameLoader frameLoader = new FrameLoader();
+//				FrameDefinition frame = frameLoader.load(framemap, contents);
 
-				Archive framemapArchive = framemapIndex.getArchives().get(framemapArchiveId);
-				archiveData = storage.loadArchive(framemapArchive);
-				byte[] framemapContents = framemapArchive.decompress(archiveData);
-
-				FramemapLoader fmloader = new FramemapLoader();
-				FramemapDefinition framemap = fmloader.load(0, framemapContents);
-
-				FrameLoader frameLoader = new FrameLoader();
-				FrameDefinition frame = frameLoader.load(framemap, contents);
-
-				frames.add(frame);
-
-				Files.write(gson.toJson(frames), new File(outDir, archive.getArchiveId() + ".json"), Charset.defaultCharset());
-				++count;
+				
+//				++count;
 			}
 		}
 

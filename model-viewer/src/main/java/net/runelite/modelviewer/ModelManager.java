@@ -46,10 +46,11 @@ public class ModelManager
 	{
 		LocationKey key;
 
-		int rot = location.getOrientation();
+		int rot = -1;
 
 		if (location != null)
 		{
+			rot = location.getOrientation();
 			key = new LocationKey(id, location.getType(), rot);
 		}
 		else

@@ -90,6 +90,11 @@ public class LocationOverlay extends Overlay
 			.left("Tile")
 			.right(localWorld.getX() + ", " + localWorld.getY() + ", " + client.getPlane())
 			.build());
+		
+		panelComponent.getChildren().add(LineComponent.builder()
+				.left("Map")
+				.right(localWorld.getX() + ", " + localWorld.getY() + ", " + client.getPlane())
+				.build());
 
 		for (int i = 0; i < client.getMapRegions().length; i++)
 		{
