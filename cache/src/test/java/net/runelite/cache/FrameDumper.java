@@ -41,7 +41,6 @@ import com.google.gson.GsonBuilder;
 import net.runelite.cache.definitions.FrameDefinition;
 import net.runelite.cache.definitions.FramemapDefinition;
 import net.runelite.cache.definitions.loaders.FrameLoader;
-import net.runelite.cache.definitions.loaders.FramemapLoader;
 import net.runelite.cache.fs.Archive;
 import net.runelite.cache.fs.ArchiveFiles;
 import net.runelite.cache.fs.FSFile;
@@ -72,50 +71,44 @@ public class FrameDumper
 
 			Storage storage = store.getStorage();
 			Index frameIndex = store.getIndex(IndexType.FRAMES);
-			Index framemapIndex = store.getIndex(IndexType.FRAMEMAPS);
+			
+			FramemapManager fmManager = new FramemapManager(store);
+			fmManager.load();
+			FrameLoader frameLoader = new FrameLoader();
+			
 
 			for (Archive archive : frameIndex.getArchives())
 			{
-
 				byte[] archiveData = storage.loadArchive(archive);
 				ArchiveFiles files = archive.getFiles(archiveData);
 				for(FSFile f : files.getFiles()) {
+					
 					byte[] contents = f.getContents();
 					
 					int framemapArchiveId = (contents[0] & 0xff) << 8 | contents[1] & 0xff;
-					
-					Archive framemapArchive = framemapIndex.getArchives().get(framemapArchiveId);
-					archiveData = storage.loadArchive(framemapArchive);
-					byte[] framemapContents = framemapArchive.decompress(archiveData);
 
-					FramemapLoader fmloader = new FramemapLoader();
-					FramemapDefinition framemap = fmloader.load(0, framemapContents);
-					
-					FrameLoader frameLoader = new FrameLoader();
-					FrameDefinition frame = frameLoader.load(framemap, contents);
-					
-					Files.write(gson.toJson(frame), new File(outDir, f.getFileId() + ".json"), Charset.defaultCharset());
+					FramemapDefinition framemap = fmManager.getNpc(framemapArchiveId);
+										
+					int frameId = archive.getArchiveId() << 16 | f.getFileId();
+					FrameDefinition frame = frameLoader.load(frameId, framemap, contents);
+					if(frame.field1310 >= 1497 || max(frame.indexFrameIds) >= 500) {
+						System.out.println(frameId);
+					}
+										
+					//Files.write(gson.toJson(frame), new File(outDir, frameId + ".json"), Charset.defaultCharset());
 					++count;
 				}
-//				byte[] contents = archive.decompress(archiveData);
-//
-//				int framemapArchiveId = (contents[0] & 0xff) << 8 | contents[1] & 0xff;
-//
-//				Archive framemapArchive = framemapIndex.getArchives().get(framemapArchiveId);
-//				archiveData = storage.loadArchive(framemapArchive);
-//				byte[] framemapContents = framemapArchive.decompress(archiveData);
-//
-//				FramemapLoader fmloader = new FramemapLoader();
-//				FramemapDefinition framemap = fmloader.load(0, framemapContents);
-//
-//				FrameLoader frameLoader = new FrameLoader();
-//				FrameDefinition frame = frameLoader.load(framemap, contents);
-
-				
-//				++count;
 			}
 		}
 
 		logger.info("Dumped {} frames to {}", count, outDir);
+	}
+	
+	private int max(int[] data) {
+		int m = Integer.MIN_VALUE;
+		for(int i : data) {
+			m = Math.max(i, m);
+		}
+		return m;
 	}
 }

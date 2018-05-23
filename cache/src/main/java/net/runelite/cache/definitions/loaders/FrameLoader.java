@@ -30,12 +30,13 @@ import net.runelite.cache.io.InputStream;
 
 public class FrameLoader
 {
-	public FrameDefinition load(FramemapDefinition framemap, byte[] b)
+	public FrameDefinition load(int id, FramemapDefinition framemap, byte[] b)
 	{
 		FrameDefinition def = new FrameDefinition();
 		InputStream in = new InputStream(b);
 		InputStream data = new InputStream(b);
 
+		def.frameId = id;
 		def.framemap = framemap;
 
 		int framemapArchiveIndex = in.readUnsignedShort();

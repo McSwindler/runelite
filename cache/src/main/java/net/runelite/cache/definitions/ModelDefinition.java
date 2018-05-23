@@ -276,7 +276,7 @@ public class ModelDefinition
 		reset();
 	}
 
-	public void method1493()
+	public void invert()
 	{
 		int var1;
 		for (var1 = 0; var1 < this.vertexCount; ++var1)
@@ -328,6 +328,18 @@ public class ModelDefinition
 
 		reset();
 	}
+	
+	public void rotate4()
+	{
+		for (int var1 = 0; var1 < this.vertexCount; ++var1)
+		{
+			int var2 = this.vertexPositionsY[var1];
+			this.vertexPositionsY[var1] = -this.vertexPositionsZ[var1];
+			this.vertexPositionsZ[var1] = var2;
+		}
+
+		reset();
+	}
 
 	private void reset()
 	{
@@ -373,5 +385,41 @@ public class ModelDefinition
 			}
 
 		}
+	}
+	
+	public void animate(FrameDefinition frame) {
+		int m = Integer.MIN_VALUE;
+		for(int i = 0; i < frame.field1310; i++) {
+			int frameId = frame.indexFrameIds[i];
+			int[] faces = frame.framemap.field1457[frameId];
+			
+			for(int j = 0; j < faces.length; j++) {
+				int faceIndex = faces[j];
+				m = Integer.max(m, frameId);
+				
+//				this.vertexPositionsX[faceIndex] += frame.translator_x[i];
+//				this.vertexPositionsY[faceIndex] += frame.translator_y[i];
+//				this.vertexPositionsZ[faceIndex] += frame.translator_z[i];
+				int vertexA = this.faceVertexIndices1[faceIndex];
+				int vertexB = this.faceVertexIndices2[faceIndex];
+				int vertexC = this.faceVertexIndices3[faceIndex];
+				
+				this.vertexPositionsX[vertexA] += frame.translator_x[i];
+				this.vertexPositionsY[vertexA] += frame.translator_y[i];
+				this.vertexPositionsZ[vertexA] += frame.translator_z[i];
+				
+				this.vertexPositionsX[vertexB] += frame.translator_x[i];
+				this.vertexPositionsY[vertexB] += frame.translator_y[i];
+				this.vertexPositionsZ[vertexB] += frame.translator_z[i];
+				
+				this.vertexPositionsX[vertexC] += frame.translator_x[i];
+				this.vertexPositionsY[vertexC] += frame.translator_y[i];
+				this.vertexPositionsZ[vertexC] += frame.translator_z[i];
+			}
+		}
+		
+		System.out.println("Max index: " + m);
+		
+		reset();
 	}
 }
