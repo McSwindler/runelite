@@ -428,6 +428,10 @@ public class ModelDefinition
 		FramemapDefinition framemap = frame.framemap;
 		for(int i = 0; i < frame.field1310; ++i) {
 			int frameIdx = frame.indexFrameIds[i];
+			
+			field1891 = 0;
+            field1892 = 0;
+            field1864 = 0;
 			method2766(framemap.field1456[frameIdx], framemap.field1457[frameIdx], frame.translator_x[i], frame.translator_y[i], frame.translator_z[i]);
 		}
 		
@@ -449,6 +453,12 @@ public class ModelDefinition
 //	         }
 //	      }
 	   }
+	
+	private int[][] field1857;
+	private int[][] field1889;
+	private int field1891;
+	private int field1892;
+	private int field1864;
 
 	   private void method2766(int var1, int[] var2, int var3, int var4, int var5) {
 	      int var6 = var2.length;
@@ -456,9 +466,9 @@ public class ModelDefinition
 	      int var8;
 	      int var11;
 	      int var12;
-	      int field1891 = 0;
-	      int field1892 = 0;
-	      int field1864 = 0;
+	      field1891 = 0;
+	      field1892 = 0;
+	      field1864 = 0;
 	      if(var1 == 0) {
 	         var7 = 0;
 
@@ -575,7 +585,7 @@ public class ModelDefinition
 	            }
 
 	         } else if(var1 == 5) {
-	            if(this.field1889 != null && this.aByteArray2580 != null) {
+	            if(this.field1889 != null && this.faceAlphas != null) {
 	               for(var7 = 0; var7 < var6; ++var7) {
 	                  var8 = var2[var7];
 	                  if(var8 < this.field1889.length) {
@@ -583,14 +593,14 @@ public class ModelDefinition
 
 	                     for(var19 = 0; var19 < var18.length; ++var19) {
 	                        var11 = var18[var19];
-	                        var12 = (this.aByteArray2580[var11] & 255) + var3 * 8;
+	                        var12 = (this.faceAlphas[var11] & 255) + var3 * 8;
 	                        if(var12 < 0) {
 	                           var12 = 0;
 	                        } else if(var12 > 255) {
 	                           var12 = 255;
 	                        }
 
-	                        this.aByteArray2580[var11] = (byte)var12;
+	                        this.faceAlphas[var11] = (byte)var12;
 	                     }
 	                  }
 	               }
@@ -599,4 +609,64 @@ public class ModelDefinition
 	         }
 	      }
 	   }
+	   
+	   
+	   public void computeAnimationTables() {
+		      int[] var1;
+		      int var2;
+		      int var3;
+		      int var4;
+		      if(this.vertexSkins != null) {
+		         var1 = new int[256];
+		         var2 = 0;
+
+		         for(var3 = 0; var3 < this.vertexCount; ++var3) {
+		            var4 = this.vertexSkins[var3];
+		            ++var1[var4];
+		            if(var4 > var2) {
+		               var2 = var4;
+		            }
+		         }
+
+		         this.field1857 = new int[var2 + 1][];
+
+		         for(var3 = 0; var3 <= var2; ++var3) {
+		            this.field1857[var3] = new int[var1[var3]];
+		            var1[var3] = 0;
+		         }
+
+		         for(var3 = 0; var3 < this.vertexCount; this.field1857[var4][var1[var4]++] = var3++) {
+		            var4 = this.vertexSkins[var3];
+		         }
+
+		         this.vertexSkins = null;
+		      }
+
+		      if(this.faceSkins != null) {
+		         var1 = new int[256];
+		         var2 = 0;
+
+		         for(var3 = 0; var3 < this.faceCount; ++var3) {
+		            var4 = this.faceSkins[var3];
+		            ++var1[var4];
+		            if(var4 > var2) {
+		               var2 = var4;
+		            }
+		         }
+
+		         this.field1889 = new int[var2 + 1][];
+
+		         for(var3 = 0; var3 <= var2; ++var3) {
+		            this.field1889[var3] = new int[var1[var3]];
+		            var1[var3] = 0;
+		         }
+
+		         for(var3 = 0; var3 < this.faceCount; this.field1889[var4][var1[var4]++] = var3++) {
+		            var4 = this.faceSkins[var3];
+		         }
+
+		         this.faceSkins = null;
+		      }
+
+		   }
 }

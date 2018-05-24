@@ -248,11 +248,11 @@ public class ModelExport
 		tm.load();
 		
 		ModelDefinition model = getModel(store, modelId);
-		model.rotate4();
 		if(frame != null) {
-			//model.animate(frame);
-			model.computeNormals();
+			model.animate(frame);
+			//model.computeNormals();
 		}
+		//model.rotate4();
 		ObjExporter exporter = new ObjExporter(tm, model);
 		try (PrintWriter objWriter = new PrintWriter(new FileWriter(new File(tag + ".obj")));
 			PrintWriter mtlWriter = new PrintWriter(new FileWriter(new File(tag + ".mtl"))))
