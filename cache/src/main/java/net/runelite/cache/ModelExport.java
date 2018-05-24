@@ -37,6 +37,8 @@ import net.runelite.cache.models.ObjExporter;
 
 public class ModelExport
 {
+	private static int sizeX = 128;
+	private static int sizeY = 128;
 	public static void main(String[] args) throws IOException
 	{
 		Options options = new Options();
@@ -117,6 +119,8 @@ public class ModelExport
 			
 			
 			NpcDefinition def = dumper.getNpc(npcId);
+			sizeX = def.resizeX;
+			sizeY = def.resizeY;
 			int anim = def.stanceAnimation;
 			
 //			getFrame(store, anim);
@@ -235,10 +239,37 @@ public class ModelExport
 	private static void exportModels(Store store, String tag, FrameDefinition frame, int...modelIds) throws IOException {
 		if(modelIds == null)
 			return;
+		
 		for(int id : modelIds) {
 			exportModel(store, frame, id, String.valueOf(id));
 		}
 	}
+	
+//	private static void mergeModels(Store store, int[] modelIds) throws IOException {
+//		ModelDefinition merged = new ModelDefinition();
+//		merged.faceCount = 0;
+//		merged.textureTriangleCount = 0;
+//		merged.vertexCount = 0;
+//		
+//		ModelDefinition[] models = new ModelDefinition[modelIds.length];
+//		for(int i = 0; i < modelIds.length; i++) {
+//			ModelDefinition model = getModel(store, modelIds[i]);
+//			models[i] = model;
+//			merged.faceCount += model.faceCount;
+//			merged.textureTriangleCount += model.textureTriangleCount;
+//			merged.vertexCount += model.vertexCount;
+//		}
+//		
+//		merged.vertexPositionsX = new int[merged.vertexCount];
+//		merged.vertexPositionsY = new int[merged.vertexCount];
+//		merged.vertexPositionsZ = new int[merged.vertexCount];
+//		merged.faceAlphas = new byte[merged.faceCount];
+//		merged.faceColors = new short[merged.faceCount]; 
+//		
+//		for(ModelDefinition model : models) {
+//			
+//		}
+//	}
 	
 	private static void exportModel(Store store, FrameDefinition frame, int modelId, String tag) throws IOException {
 		if(modelId < 0)
@@ -248,10 +279,15 @@ public class ModelExport
 		tm.load();
 		
 		ModelDefinition model = getModel(store, modelId);
+		//model.computeAnimationTables();
 		if(frame != null) {
 			model.animate(frame);
 			//model.computeNormals();
 		}
+		model.rotate4();
+		model.resize(sizeX, sizeY, sizeX);
+		model.computeNormals();
+		model.computeTextureUVCoordinates();
 		//model.rotate4();
 		ObjExporter exporter = new ObjExporter(tm, model);
 		try (PrintWriter objWriter = new PrintWriter(new FileWriter(new File(tag + ".obj")));

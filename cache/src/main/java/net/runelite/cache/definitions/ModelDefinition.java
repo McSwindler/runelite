@@ -429,9 +429,6 @@ public class ModelDefinition
 		for(int i = 0; i < frame.field1310; ++i) {
 			int frameIdx = frame.indexFrameIds[i];
 			
-			field1891 = 0;
-            field1892 = 0;
-            field1864 = 0;
 			method2766(framemap.field1456[frameIdx], framemap.field1457[frameIdx], frame.translator_x[i], frame.translator_y[i], frame.translator_z[i]);
 		}
 		
@@ -454,8 +451,8 @@ public class ModelDefinition
 //	      }
 	   }
 	
-	private int[][] field1857;
-	private int[][] field1889;
+	private int[][] vertexAnimationTable;
+	private int[][] faceAnimationTable;
 	private int field1891;
 	private int field1892;
 	private int field1864;
@@ -466,16 +463,17 @@ public class ModelDefinition
 	      int var8;
 	      int var11;
 	      int var12;
-	      field1891 = 0;
-	      field1892 = 0;
-	      field1864 = 0;
+
 	      if(var1 == 0) {
 	         var7 = 0;
+	         field1891 = 0;
+	         field1892 = 0;
+	         field1864 = 0;
 
 	         for(var8 = 0; var8 < var6; ++var8) {
 	            int var9 = var2[var8];
-	            if(var9 < this.field1857.length) {
-	               int[] var10 = this.field1857[var9];
+	            if(var9 < this.vertexAnimationTable.length) {
+	               int[] var10 = this.vertexAnimationTable[var9];
 
 	               for(var11 = 0; var11 < var10.length; ++var11) {
 	                  var12 = var10[var11];
@@ -503,8 +501,8 @@ public class ModelDefinition
 	         if(var1 == 1) {
 	            for(var7 = 0; var7 < var6; ++var7) {
 	               var8 = var2[var7];
-	               if(var8 < this.field1857.length) {
-	                  var18 = this.field1857[var8];
+	               if(var8 < this.vertexAnimationTable.length) {
+	                  var18 = this.vertexAnimationTable[var8];
 
 	                  for(var19 = 0; var19 < var18.length; ++var19) {
 	                     var11 = var18[var19];
@@ -518,8 +516,8 @@ public class ModelDefinition
 	         } else if(var1 == 2) {
 	            for(var7 = 0; var7 < var6; ++var7) {
 	               var8 = var2[var7];
-	               if(var8 < this.field1857.length) {
-	                  var18 = this.field1857[var8];
+	               if(var8 < this.vertexAnimationTable.length) {
+	                  var18 = this.vertexAnimationTable[var8];
 
 	                  for(var19 = 0; var19 < var18.length; ++var19) {
 	                     var11 = var18[var19];
@@ -566,8 +564,8 @@ public class ModelDefinition
 	         } else if(var1 == 3) {
 	            for(var7 = 0; var7 < var6; ++var7) {
 	               var8 = var2[var7];
-	               if(var8 < this.field1857.length) {
-	                  var18 = this.field1857[var8];
+	               if(var8 < this.vertexAnimationTable.length) {
+	                  var18 = this.vertexAnimationTable[var8];
 
 	                  for(var19 = 0; var19 < var18.length; ++var19) {
 	                     var11 = var18[var19];
@@ -585,11 +583,11 @@ public class ModelDefinition
 	            }
 
 	         } else if(var1 == 5) {
-	            if(this.field1889 != null && this.faceAlphas != null) {
+	            if(this.faceAnimationTable != null && this.faceAlphas != null) {
 	               for(var7 = 0; var7 < var6; ++var7) {
 	                  var8 = var2[var7];
-	                  if(var8 < this.field1889.length) {
-	                     var18 = this.field1889[var8];
+	                  if(var8 < this.faceAnimationTable.length) {
+	                     var18 = this.faceAnimationTable[var8];
 
 	                     for(var19 = 0; var19 < var18.length; ++var19) {
 	                        var11 = var18[var19];
@@ -628,14 +626,14 @@ public class ModelDefinition
 		            }
 		         }
 
-		         this.field1857 = new int[var2 + 1][];
+		         this.vertexAnimationTable = new int[var2 + 1][];
 
 		         for(var3 = 0; var3 <= var2; ++var3) {
-		            this.field1857[var3] = new int[var1[var3]];
+		            this.vertexAnimationTable[var3] = new int[var1[var3]];
 		            var1[var3] = 0;
 		         }
 
-		         for(var3 = 0; var3 < this.vertexCount; this.field1857[var4][var1[var4]++] = var3++) {
+		         for(var3 = 0; var3 < this.vertexCount; this.vertexAnimationTable[var4][var1[var4]++] = var3++) {
 		            var4 = this.vertexSkins[var3];
 		         }
 
@@ -654,14 +652,14 @@ public class ModelDefinition
 		            }
 		         }
 
-		         this.field1889 = new int[var2 + 1][];
+		         this.faceAnimationTable = new int[var2 + 1][];
 
 		         for(var3 = 0; var3 <= var2; ++var3) {
-		            this.field1889[var3] = new int[var1[var3]];
+		            this.faceAnimationTable[var3] = new int[var1[var3]];
 		            var1[var3] = 0;
 		         }
 
-		         for(var3 = 0; var3 < this.faceCount; this.field1889[var4][var1[var4]++] = var3++) {
+		         for(var3 = 0; var3 < this.faceCount; this.faceAnimationTable[var4][var1[var4]++] = var3++) {
 		            var4 = this.faceSkins[var3];
 		         }
 
