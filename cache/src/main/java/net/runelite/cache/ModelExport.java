@@ -5,6 +5,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.Charset;
+import java.util.Arrays;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -33,7 +34,9 @@ import net.runelite.cache.fs.FSFile;
 import net.runelite.cache.fs.Index;
 import net.runelite.cache.fs.Storage;
 import net.runelite.cache.fs.Store;
+import net.runelite.cache.models.FaceNormal;
 import net.runelite.cache.models.ObjExporter;
+import net.runelite.cache.models.VertexNormal;
 
 public class ModelExport
 {
@@ -240,36 +243,149 @@ public class ModelExport
 		if(modelIds == null)
 			return;
 		
+//		exportModel(store, frame, mergeModels(store, modelIds));
+		
 		for(int id : modelIds) {
 			exportModel(store, frame, id, String.valueOf(id));
 		}
 	}
 	
-//	private static void mergeModels(Store store, int[] modelIds) throws IOException {
-//		ModelDefinition merged = new ModelDefinition();
-//		merged.faceCount = 0;
-//		merged.textureTriangleCount = 0;
-//		merged.vertexCount = 0;
-//		
-//		ModelDefinition[] models = new ModelDefinition[modelIds.length];
-//		for(int i = 0; i < modelIds.length; i++) {
-//			ModelDefinition model = getModel(store, modelIds[i]);
-//			models[i] = model;
-//			merged.faceCount += model.faceCount;
-//			merged.textureTriangleCount += model.textureTriangleCount;
-//			merged.vertexCount += model.vertexCount;
-//		}
-//		
-//		merged.vertexPositionsX = new int[merged.vertexCount];
-//		merged.vertexPositionsY = new int[merged.vertexCount];
-//		merged.vertexPositionsZ = new int[merged.vertexCount];
-//		merged.faceAlphas = new byte[merged.faceCount];
-//		merged.faceColors = new short[merged.faceCount]; 
-//		
-//		for(ModelDefinition model : models) {
-//			
-//		}
-//	}
+	private static ModelDefinition mergeModels(Store store, int[] modelIds) throws IOException {
+		ModelDefinition merged = new ModelDefinition();
+		merged.faceCount = 0;
+		merged.textureTriangleCount = 0;
+		merged.vertexCount = 0;
+		
+		ModelDefinition[] models = new ModelDefinition[modelIds.length];
+		for(int i = 0; i < modelIds.length; i++) {
+			ModelDefinition model = getModel(store, modelIds[i]);
+			models[i] = model;
+			merged.faceCount += model.faceCount;
+			merged.textureTriangleCount += model.textureTriangleCount;
+			merged.vertexCount += model.vertexCount;
+		}
+		
+		merged.vertexPositionsX = new int[merged.vertexCount];
+		merged.vertexPositionsY = new int[merged.vertexCount];
+		merged.vertexPositionsZ = new int[merged.vertexCount];
+		
+		merged.faceVertexIndices1 = new int[merged.faceCount];
+		merged.faceVertexIndices2 = new int[merged.faceCount];
+		merged.faceVertexIndices3 = new int[merged.faceCount];
+		merged.faceAlphas = new byte[merged.faceCount];
+		merged.faceColors = new short[merged.faceCount];
+		merged.faceRenderPriorities = new byte[merged.faceCount];
+		merged.faceRenderTypes = new byte[merged.faceCount];
+		
+		if(merged.textureTriangleCount > 0) {
+			merged.textureTriangleVertexIndices1 = new short[merged.textureTriangleCount];
+			merged.textureTriangleVertexIndices2 = new short[merged.textureTriangleCount];
+			merged.textureTriangleVertexIndices3 = new short[merged.textureTriangleCount];
+			merged.texturePrimaryColors = new short[merged.textureTriangleCount];
+			merged.faceTextures = new short[merged.textureTriangleCount];
+			merged.textureCoordinates = new byte[merged.textureTriangleCount];
+			merged.textureRenderTypes = new byte[merged.textureTriangleCount];
+		}
+		
+		merged.vertexSkins = new int[merged.vertexCount];
+		merged.faceSkins = new int[merged.faceCount];
+		
+		int vPos = 0;
+		int fPos = 0;
+		int tPos = 0;
+		for(ModelDefinition model : models) {
+			if(vPos == 0)
+				merged.id = model.id;
+			System.arraycopy(model.vertexPositionsX, 0, merged.vertexPositionsX, vPos, model.vertexPositionsX.length);
+			System.arraycopy(model.vertexPositionsY, 0, merged.vertexPositionsY, vPos, model.vertexPositionsY.length);
+			System.arraycopy(model.vertexPositionsZ, 0, merged.vertexPositionsZ, vPos, model.vertexPositionsZ.length);
+			System.arraycopy(model.vertexSkins, 0, merged.vertexSkins, vPos, model.vertexSkins.length);
+			vPos += model.vertexCount;
+			
+			System.arraycopy(model.faceVertexIndices1, 0, merged.faceVertexIndices1, fPos, model.faceVertexIndices1.length);
+			System.arraycopy(model.faceVertexIndices2, 0, merged.faceVertexIndices2, fPos, model.faceVertexIndices2.length);
+			System.arraycopy(model.faceVertexIndices3, 0, merged.faceVertexIndices3, fPos, model.faceVertexIndices3.length);
+			if(model.faceAlphas != null)
+				System.arraycopy(model.faceAlphas, 0, merged.faceAlphas, fPos, model.faceAlphas.length);
+			else
+				Arrays.fill(merged.faceAlphas, fPos, fPos + model.faceCount, (byte) 0);
+			System.arraycopy(model.faceColors, 0, merged.faceColors, fPos, model.faceColors.length);
+			if(model.faceRenderPriorities != null)
+				System.arraycopy(model.faceRenderPriorities, 0, merged.faceRenderPriorities, fPos, model.faceRenderPriorities.length);
+			else
+				Arrays.fill(merged.faceRenderPriorities, fPos, fPos + model.faceCount, (byte) 0);
+			if(model.faceRenderTypes != null)
+				System.arraycopy(model.faceRenderTypes, 0, merged.faceRenderTypes, fPos, model.faceRenderTypes.length);
+			else
+				Arrays.fill(merged.faceRenderTypes, fPos, fPos + model.faceCount, (byte) 0);
+			System.arraycopy(model.faceSkins, 0, merged.faceSkins, fPos, model.faceSkins.length);
+			fPos += model.faceCount;
+			
+			if(merged.textureTriangleCount > 0) {
+				if(model.textureTriangleVertexIndices1 != null)
+					System.arraycopy(model.textureTriangleVertexIndices1, 0, merged.textureTriangleVertexIndices1, tPos, model.textureTriangleVertexIndices1.length);
+				else
+					Arrays.fill(merged.textureTriangleVertexIndices1, tPos, tPos + model.textureTriangleCount, (byte) 0);
+				if(model.textureTriangleVertexIndices2 != null)
+					System.arraycopy(model.textureTriangleVertexIndices2, 0, merged.textureTriangleVertexIndices2, tPos, model.textureTriangleVertexIndices2.length);
+				else
+					Arrays.fill(merged.textureTriangleVertexIndices2, tPos, tPos + model.textureTriangleCount, (byte) 0);
+				if(model.textureTriangleVertexIndices3 != null)
+					System.arraycopy(model.textureTriangleVertexIndices3, 0, merged.textureTriangleVertexIndices3, tPos, model.textureTriangleVertexIndices3.length);
+				else
+					Arrays.fill(merged.textureTriangleVertexIndices3, tPos, tPos + model.textureTriangleCount, (byte) 0);
+				if(model.texturePrimaryColors != null)
+					System.arraycopy(model.texturePrimaryColors, 0, merged.texturePrimaryColors, tPos, model.texturePrimaryColors.length);
+				else
+					Arrays.fill(merged.texturePrimaryColors, tPos, tPos + model.textureTriangleCount, (byte) 0);
+				if(model.faceTextures != null)
+					System.arraycopy(model.faceTextures, 0, merged.faceTextures, tPos, model.faceTextures.length);
+				else
+					Arrays.fill(merged.faceTextures, tPos, tPos + model.textureTriangleCount, (byte) 0);
+				if(model.textureCoordinates != null)
+					System.arraycopy(model.textureCoordinates, 0, merged.textureCoordinates, tPos, model.textureCoordinates.length);
+				else
+					Arrays.fill(merged.textureCoordinates, tPos, tPos + model.textureTriangleCount, (byte) 0);
+				if(model.textureRenderTypes != null)
+					System.arraycopy(model.textureRenderTypes, 0, merged.textureRenderTypes, tPos, model.textureRenderTypes.length);
+				else
+					Arrays.fill(merged.textureRenderTypes, tPos, tPos + model.textureTriangleCount, (byte) 0);
+				tPos += model.textureTriangleCount;
+			}
+			
+		}
+		
+		merged.computeNormals();
+		merged.computeTextureUVCoordinates();
+		
+		return merged;
+	}
+	
+	private static void exportModel(Store store, FrameDefinition frame, ModelDefinition model) throws IOException {
+		if(model == null)
+			return;
+		
+		TextureManager tm = new TextureManager(store);
+		tm.load();
+		
+		if(frame != null) {
+			model.computeAnimationTables();
+			model.animate(frame);
+			//model.computeNormals();
+		}
+		model.rotate4();
+		model.resize(sizeX, sizeY, sizeX);
+		model.computeNormals();
+		model.computeTextureUVCoordinates();
+		//model.rotate4();
+		ObjExporter exporter = new ObjExporter(tm, model);
+		try (PrintWriter objWriter = new PrintWriter(new FileWriter(new File(model.id + ".obj")));
+			PrintWriter mtlWriter = new PrintWriter(new FileWriter(new File(model.id + ".mtl"))))
+		{
+			exporter.export(objWriter, mtlWriter);
+			System.out.println("Saved " + model.id + ".obj");
+		}
+	}
 	
 	private static void exportModel(Store store, FrameDefinition frame, int modelId, String tag) throws IOException {
 		if(modelId < 0)
@@ -279,8 +395,8 @@ public class ModelExport
 		tm.load();
 		
 		ModelDefinition model = getModel(store, modelId);
-		//model.computeAnimationTables();
 		if(frame != null) {
+			model.computeAnimationTables();
 			model.animate(frame);
 			//model.computeNormals();
 		}

@@ -21,7 +21,7 @@ public class ModelLoader
 
 		def.computeNormals();
 		def.computeTextureUVCoordinates();
-		def.computeAnimationTables();
+		//def.computeAnimationTables();
 
 		return def;
 	}
