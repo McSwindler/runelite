@@ -387,39 +387,216 @@ public class ModelDefinition
 		}
 	}
 	
+//	public void animate(FrameDefinition frame) {
+//		int m = Integer.MIN_VALUE;
+//		for(int i = 0; i < frame.field1310; i++) {
+//			int frameId = frame.indexFrameIds[i];
+//			int[] faces = frame.framemap.field1457[frameId];
+//			
+//			for(int j = 0; j < faces.length; j++) {
+//				int faceIndex = faces[j];
+//				m = Integer.max(m, frameId);
+//				
+////				this.vertexPositionsX[faceIndex] += frame.translator_x[i];
+////				this.vertexPositionsY[faceIndex] += frame.translator_y[i];
+////				this.vertexPositionsZ[faceIndex] += frame.translator_z[i];
+//				int vertexA = this.faceVertexIndices1[faceIndex];
+//				int vertexB = this.faceVertexIndices2[faceIndex];
+//				int vertexC = this.faceVertexIndices3[faceIndex];
+//				
+//				this.vertexPositionsX[vertexA] += frame.translator_x[i];
+//				this.vertexPositionsY[vertexA] += frame.translator_y[i];
+//				this.vertexPositionsZ[vertexA] += frame.translator_z[i];
+//				
+//				this.vertexPositionsX[vertexB] += frame.translator_x[i];
+//				this.vertexPositionsY[vertexB] += frame.translator_y[i];
+//				this.vertexPositionsZ[vertexB] += frame.translator_z[i];
+//				
+//				this.vertexPositionsX[vertexC] += frame.translator_x[i];
+//				this.vertexPositionsY[vertexC] += frame.translator_y[i];
+//				this.vertexPositionsZ[vertexC] += frame.translator_z[i];
+//			}
+//		}
+//		
+//		System.out.println("Max index: " + m);
+//		
+//		reset();
+//	}
+	
+	
 	public void animate(FrameDefinition frame) {
-		int m = Integer.MIN_VALUE;
-		for(int i = 0; i < frame.field1310; i++) {
-			int frameId = frame.indexFrameIds[i];
-			int[] faces = frame.framemap.field1457[frameId];
-			
-			for(int j = 0; j < faces.length; j++) {
-				int faceIndex = faces[j];
-				m = Integer.max(m, frameId);
-				
-//				this.vertexPositionsX[faceIndex] += frame.translator_x[i];
-//				this.vertexPositionsY[faceIndex] += frame.translator_y[i];
-//				this.vertexPositionsZ[faceIndex] += frame.translator_z[i];
-				int vertexA = this.faceVertexIndices1[faceIndex];
-				int vertexB = this.faceVertexIndices2[faceIndex];
-				int vertexC = this.faceVertexIndices3[faceIndex];
-				
-				this.vertexPositionsX[vertexA] += frame.translator_x[i];
-				this.vertexPositionsY[vertexA] += frame.translator_y[i];
-				this.vertexPositionsZ[vertexA] += frame.translator_z[i];
-				
-				this.vertexPositionsX[vertexB] += frame.translator_x[i];
-				this.vertexPositionsY[vertexB] += frame.translator_y[i];
-				this.vertexPositionsZ[vertexB] += frame.translator_z[i];
-				
-				this.vertexPositionsX[vertexC] += frame.translator_x[i];
-				this.vertexPositionsY[vertexC] += frame.translator_y[i];
-				this.vertexPositionsZ[vertexC] += frame.translator_z[i];
-			}
+		FramemapDefinition framemap = frame.framemap;
+		for(int i = 0; i < frame.field1310; ++i) {
+			int frameIdx = frame.indexFrameIds[i];
+			method2766(framemap.field1456[frameIdx], framemap.field1457[frameIdx], frame.translator_x[i], frame.translator_y[i], frame.translator_z[i]);
 		}
 		
-		System.out.println("Max index: " + m);
-		
 		reset();
-	}
+//	      if(this.field1857 != null) {
+//	         if(var2 != -1) {
+//	            Frame var3 = var1.skeletons[var2];
+//	            FrameMap var4 = var3.skin;
+//	            field1891 = 0;
+//	            field1892 = 0;
+//	            field1864 = 0;
+//
+//	            for(int var5 = 0; var5 < var3.field1803; ++var5) {
+//	               int var6 = var3.field1806[var5];
+//	               this.method2766(var4.types[var6], var4.list[var6], var3.translator_x[var5], var3.translator_y[var5], var3.translator_z[var5]);
+//	            }
+//
+//	            this.resetBounds();
+//	         }
+//	      }
+	   }
+
+	   private void method2766(int var1, int[] var2, int var3, int var4, int var5) {
+	      int var6 = var2.length;
+	      int var7;
+	      int var8;
+	      int var11;
+	      int var12;
+	      int field1891 = 0;
+	      int field1892 = 0;
+	      int field1864 = 0;
+	      if(var1 == 0) {
+	         var7 = 0;
+
+	         for(var8 = 0; var8 < var6; ++var8) {
+	            int var9 = var2[var8];
+	            if(var9 < this.field1857.length) {
+	               int[] var10 = this.field1857[var9];
+
+	               for(var11 = 0; var11 < var10.length; ++var11) {
+	                  var12 = var10[var11];
+	                  field1891 += this.vertexPositionsX[var12];
+	                  field1892 += this.vertexPositionsY[var12];
+	                  field1864 += this.vertexPositionsZ[var12];
+	                  ++var7;
+	               }
+	            }
+	         }
+
+	         if(var7 > 0) {
+	            field1891 = var3 + field1891 / var7;
+	            field1892 = var4 + field1892 / var7;
+	            field1864 = var5 + field1864 / var7;
+	         } else {
+	            field1891 = var3;
+	            field1892 = var4;
+	            field1864 = var5;
+	         }
+
+	      } else {
+	         int[] var18;
+	         int var19;
+	         if(var1 == 1) {
+	            for(var7 = 0; var7 < var6; ++var7) {
+	               var8 = var2[var7];
+	               if(var8 < this.field1857.length) {
+	                  var18 = this.field1857[var8];
+
+	                  for(var19 = 0; var19 < var18.length; ++var19) {
+	                     var11 = var18[var19];
+	                     this.vertexPositionsX[var11] += var3;
+	                     this.vertexPositionsY[var11] += var4;
+	                     this.vertexPositionsZ[var11] += var5;
+	                  }
+	               }
+	            }
+
+	         } else if(var1 == 2) {
+	            for(var7 = 0; var7 < var6; ++var7) {
+	               var8 = var2[var7];
+	               if(var8 < this.field1857.length) {
+	                  var18 = this.field1857[var8];
+
+	                  for(var19 = 0; var19 < var18.length; ++var19) {
+	                     var11 = var18[var19];
+	                     this.vertexPositionsX[var11] -= field1891;
+	                     this.vertexPositionsY[var11] -= field1892;
+	                     this.vertexPositionsZ[var11] -= field1864;
+	                     var12 = (var3 & 255) * 8;
+	                     int var13 = (var4 & 255) * 8;
+	                     int var14 = (var5 & 255) * 8;
+	                     int var15;
+	                     int var16;
+	                     int var17;
+	                     if(var14 != 0) {
+	                        var15 = CircularAngle.SINE[var14];
+	                        var16 = CircularAngle.COSINE[var14];
+	                        var17 = var15 * this.vertexPositionsY[var11] + var16 * this.vertexPositionsX[var11] >> 16;
+	                        this.vertexPositionsY[var11] = var16 * this.vertexPositionsY[var11] - var15 * this.vertexPositionsX[var11] >> 16;
+	                        this.vertexPositionsX[var11] = var17;
+	                     }
+
+	                     if(var12 != 0) {
+	                        var15 = CircularAngle.SINE[var12];
+	                        var16 = CircularAngle.COSINE[var12];
+	                        var17 = var16 * this.vertexPositionsY[var11] - var15 * this.vertexPositionsZ[var11] >> 16;
+	                        this.vertexPositionsZ[var11] = var15 * this.vertexPositionsY[var11] + var16 * this.vertexPositionsZ[var11] >> 16;
+	                        this.vertexPositionsY[var11] = var17;
+	                     }
+
+	                     if(var13 != 0) {
+	                        var15 = CircularAngle.SINE[var13];
+	                        var16 = CircularAngle.COSINE[var13];
+	                        var17 = var15 * this.vertexPositionsZ[var11] + var16 * this.vertexPositionsX[var11] >> 16;
+	                        this.vertexPositionsZ[var11] = var16 * this.vertexPositionsZ[var11] - var15 * this.vertexPositionsX[var11] >> 16;
+	                        this.vertexPositionsX[var11] = var17;
+	                     }
+
+	                     this.vertexPositionsX[var11] += field1891;
+	                     this.vertexPositionsY[var11] += field1892;
+	                     this.vertexPositionsZ[var11] += field1864;
+	                  }
+	               }
+	            }
+
+	         } else if(var1 == 3) {
+	            for(var7 = 0; var7 < var6; ++var7) {
+	               var8 = var2[var7];
+	               if(var8 < this.field1857.length) {
+	                  var18 = this.field1857[var8];
+
+	                  for(var19 = 0; var19 < var18.length; ++var19) {
+	                     var11 = var18[var19];
+	                     this.vertexPositionsX[var11] -= field1891;
+	                     this.vertexPositionsY[var11] -= field1892;
+	                     this.vertexPositionsZ[var11] -= field1864;
+	                     this.vertexPositionsX[var11] = var3 * this.vertexPositionsX[var11] / 128;
+	                     this.vertexPositionsY[var11] = var4 * this.vertexPositionsY[var11] / 128;
+	                     this.vertexPositionsZ[var11] = var5 * this.vertexPositionsZ[var11] / 128;
+	                     this.vertexPositionsX[var11] += field1891;
+	                     this.vertexPositionsY[var11] += field1892;
+	                     this.vertexPositionsZ[var11] += field1864;
+	                  }
+	               }
+	            }
+
+	         } else if(var1 == 5) {
+	            if(this.field1889 != null && this.aByteArray2580 != null) {
+	               for(var7 = 0; var7 < var6; ++var7) {
+	                  var8 = var2[var7];
+	                  if(var8 < this.field1889.length) {
+	                     var18 = this.field1889[var8];
+
+	                     for(var19 = 0; var19 < var18.length; ++var19) {
+	                        var11 = var18[var19];
+	                        var12 = (this.aByteArray2580[var11] & 255) + var3 * 8;
+	                        if(var12 < 0) {
+	                           var12 = 0;
+	                        } else if(var12 > 255) {
+	                           var12 = 255;
+	                        }
+
+	                        this.aByteArray2580[var11] = (byte)var12;
+	                     }
+	                  }
+	               }
+	            }
+
+	         }
+	      }
+	   }
 }
