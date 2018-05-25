@@ -231,7 +231,7 @@ public class ModelExport
 	
 	private static Store loadStore(String cache) throws IOException
 	{
-		Store store = new Store(new File(cache));
+		Store store = new Store(StoreLocation.LOCATION);
 		store.load();
 		return store;
 	}
@@ -240,36 +240,58 @@ public class ModelExport
 		if(modelIds == null)
 			return;
 		
-		for(int id : modelIds) {
-			exportModel(store, frame, id, String.valueOf(id));
-		}
+		exportModel(store, frame, mergeModels(store, modelIds));
+		
+//		for(int id : modelIds) {
+//			exportModel(store, frame, id, String.valueOf(id));
+//		}
 	}
 	
-//	private static void mergeModels(Store store, int[] modelIds) throws IOException {
-//		ModelDefinition merged = new ModelDefinition();
-//		merged.faceCount = 0;
-//		merged.textureTriangleCount = 0;
-//		merged.vertexCount = 0;
-//		
-//		ModelDefinition[] models = new ModelDefinition[modelIds.length];
-//		for(int i = 0; i < modelIds.length; i++) {
-//			ModelDefinition model = getModel(store, modelIds[i]);
-//			models[i] = model;
-//			merged.faceCount += model.faceCount;
-//			merged.textureTriangleCount += model.textureTriangleCount;
-//			merged.vertexCount += model.vertexCount;
-//		}
-//		
-//		merged.vertexPositionsX = new int[merged.vertexCount];
-//		merged.vertexPositionsY = new int[merged.vertexCount];
-//		merged.vertexPositionsZ = new int[merged.vertexCount];
-//		merged.faceAlphas = new byte[merged.faceCount];
-//		merged.faceColors = new short[merged.faceCount]; 
-//		
-//		for(ModelDefinition model : models) {
-//			
-//		}
-//	}
+	private static ModelDefinition mergeModels(Store store, int[] modelIds) throws IOException {
+		ModelDefinition merged = new ModelDefinition();
+		merged.faceCount = 0;
+		merged.textureTriangleCount = 0;
+		merged.vertexCount = 0;
+		
+		ModelDefinition[] models = new ModelDefinition[modelIds.length];
+		for(int i = 0; i < modelIds.length; i++) {
+			ModelDefinition model = getModel(store, modelIds[i]);
+			models[i] = model;
+		}
+		
+		merged = new ModelDefinition(models, models.length);
+		
+		return merged;
+	}
+	
+	private static void exportModel(Store store, FrameDefinition frame, ModelDefinition model) throws IOException {
+		if(model == null)
+			return;
+		
+		TextureManager tm = new TextureManager(store);
+		tm.load();
+		
+		//model.computeAnimationTables();
+		model.computeNormals();
+		model.computeTextureUVCoordinates();
+		if(frame != null) {
+			model.computeAnimationTables();
+			model.animate(frame);
+			//model.computeNormals();
+		}
+		model.rotate4();
+		model.resize(sizeX, sizeY, sizeX);
+		//model.computeNormals();
+		//model.computeTextureUVCoordinates();
+		//model.rotate4();
+		ObjExporter exporter = new ObjExporter(tm, model);
+		try (PrintWriter objWriter = new PrintWriter(new FileWriter(new File(model.id + ".obj")));
+			PrintWriter mtlWriter = new PrintWriter(new FileWriter(new File(model.id + ".mtl"))))
+		{
+			exporter.export(objWriter, mtlWriter);
+			System.out.println("Saved " + model.id + ".obj");
+		}
+	}
 	
 	private static void exportModel(Store store, FrameDefinition frame, int modelId, String tag) throws IOException {
 		if(modelId < 0)

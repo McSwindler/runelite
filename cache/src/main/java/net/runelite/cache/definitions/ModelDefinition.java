@@ -46,6 +46,11 @@ public class ModelDefinition
 	public short[] aShortArray2578;
 	public byte[] aByteArray2580;
 	public short[] aShortArray2586;
+	
+	public ModelDefinition()
+	{
+		// TODO Auto-generated constructor stub
+	}
 
 	public void computeNormals()
 	{
@@ -666,5 +671,205 @@ public class ModelDefinition
 		         this.faceSkins = null;
 		      }
 
+		   }
+	   
+	   public ModelDefinition(ModelDefinition[] models, int var2) {
+		   this.id = 1337;
+		      this.vertexCount = 0;
+		      this.faceCount = 0;
+		      this.priority = 0;
+		      boolean var3 = false;
+		      boolean var4 = false;
+		      boolean var5 = false;
+		      boolean var6 = false;
+		      boolean var7 = false;
+		      boolean var8 = false;
+		      this.vertexCount = 0;
+		      this.faceCount = 0;
+		      this.textureTriangleCount = 0;
+		      this.priority = -1;
+
+		      int var9;
+		      ModelDefinition var10;
+		      for(var9 = 0; var9 < var2; ++var9) {
+		         var10 = models[var9];
+		         if(var10 != null) {
+		            this.vertexCount += var10.vertexCount;
+		            this.faceCount += var10.faceCount;
+		            this.textureTriangleCount += var10.textureTriangleCount;
+		            if(var10.faceRenderPriorities != null) {
+		               var4 = true;
+		            } else {
+		               if(this.priority == -1) {
+		                  this.priority = var10.priority;
+		               }
+
+		               if(this.priority != var10.priority) {
+		                  var4 = true;
+		               }
+		            }
+
+		            var3 |= var10.faceRenderTypes != null;
+		            var5 |= var10.faceAlphas != null;
+		            var6 |= var10.faceSkins != null;
+		            var7 |= var10.faceTextures != null;
+		            var8 |= var10.textureCoordinates != null;
+		         }
+		      }
+
+		      this.vertexPositionsX = new int[this.vertexCount];
+		      this.vertexPositionsY = new int[this.vertexCount];
+		      this.vertexPositionsZ = new int[this.vertexCount];
+		      this.vertexSkins = new int[this.vertexCount];
+		      this.faceVertexIndices1 = new int[this.faceCount];
+		      this.faceVertexIndices2 = new int[this.faceCount];
+		      this.faceVertexIndices3 = new int[this.faceCount];
+		      if(var3) {
+		         this.faceRenderTypes = new byte[this.faceCount];
+		      }
+
+		      if(var4) {
+		         this.faceRenderPriorities = new byte[this.faceCount];
+		      }
+
+		      if(var5) {
+		         this.faceAlphas = new byte[this.faceCount];
+		      }
+
+		      if(var6) {
+		         this.faceSkins = new int[this.faceCount];
+		      }
+
+		      if(var7) {
+		         this.faceTextures = new short[this.faceCount];
+		      }
+
+		      if(var8) {
+		         this.textureCoordinates = new byte[this.faceCount];
+		      }
+
+		      this.faceColors = new short[this.faceCount];
+		      if(this.textureTriangleCount > 0) {
+		         this.textureRenderTypes = new byte[this.textureTriangleCount];
+		         this.textureTriangleVertexIndices1 = new short[this.textureTriangleCount];
+		         this.textureTriangleVertexIndices2 = new short[this.textureTriangleCount];
+		         this.textureTriangleVertexIndices3 = new short[this.textureTriangleCount];
+		         this.aShortArray2574 = new short[this.textureTriangleCount];
+		         this.aShortArray2575 = new short[this.textureTriangleCount];
+		         this.aShortArray2586 = new short[this.textureTriangleCount];
+		         this.aShortArray2577 = new short[this.textureTriangleCount];
+		         this.aByteArray2580 = new byte[this.textureTriangleCount];
+		         this.aShortArray2578 = new short[this.textureTriangleCount];
+		         this.texturePrimaryColors = new short[this.textureTriangleCount];
+		      }
+
+		      this.vertexCount = 0;
+		      this.faceCount = 0;
+		      this.textureTriangleCount = 0;
+
+		      for(var9 = 0; var9 < var2; ++var9) {
+		         var10 = models[var9];
+		         if(var10 != null) {
+		            int var11;
+		            for(var11 = 0; var11 < var10.faceCount; ++var11) {
+		               if(var3 && var10.faceRenderTypes != null) {
+		                  this.faceRenderTypes[this.faceCount] = var10.faceRenderTypes[var11];
+		               }
+
+		               if(var4) {
+		                  if(var10.faceRenderPriorities != null) {
+		                     this.faceRenderPriorities[this.faceCount] = var10.faceRenderPriorities[var11];
+		                  } else {
+		                     this.faceRenderPriorities[this.faceCount] = var10.priority;
+		                  }
+		               }
+
+		               if(var5 && var10.faceAlphas != null) {
+		                  this.faceAlphas[this.faceCount] = var10.faceAlphas[var11];
+		               }
+
+		               if(var6 && var10.faceSkins != null) {
+		                  this.faceSkins[this.faceCount] = var10.faceSkins[var11];
+		               }
+
+		               if(var7) {
+		                  if(var10.faceTextures != null) {
+		                     this.faceTextures[this.faceCount] = var10.faceTextures[var11];
+		                  } else {
+		                     this.faceTextures[this.faceCount] = -1;
+		                  }
+		               }
+
+		               if(var8) {
+		                  if(var10.textureCoordinates != null && var10.textureCoordinates[var11] != -1) {
+		                     this.textureCoordinates[this.faceCount] = (byte)(this.textureTriangleCount + var10.textureCoordinates[var11]);
+		                  } else {
+		                     this.textureCoordinates[this.faceCount] = -1;
+		                  }
+		               }
+
+		               this.faceColors[this.faceCount] = var10.faceColors[var11];
+		               this.faceVertexIndices1[this.faceCount] = this.method2725(var10, var10.faceVertexIndices1[var11]);
+		               this.faceVertexIndices2[this.faceCount] = this.method2725(var10, var10.faceVertexIndices2[var11]);
+		               this.faceVertexIndices3[this.faceCount] = this.method2725(var10, var10.faceVertexIndices3[var11]);
+		               ++this.faceCount;
+		            }
+
+		            for(var11 = 0; var11 < var10.textureTriangleCount; ++var11) {
+		               byte var12 = this.textureRenderTypes[this.textureTriangleCount] = var10.textureRenderTypes[var11];
+		               if(var12 == 0) {
+		                  this.textureTriangleVertexIndices1[this.textureTriangleCount] = (short)this.method2725(var10, var10.textureTriangleVertexIndices1[var11]);
+		                  this.textureTriangleVertexIndices2[this.textureTriangleCount] = (short)this.method2725(var10, var10.textureTriangleVertexIndices2[var11]);
+		                  this.textureTriangleVertexIndices3[this.textureTriangleCount] = (short)this.method2725(var10, var10.textureTriangleVertexIndices3[var11]);
+		               }
+
+		               if(var12 >= 1 && var12 <= 3) {
+		                  this.textureTriangleVertexIndices1[this.textureTriangleCount] = var10.textureTriangleVertexIndices1[var11];
+		                  this.textureTriangleVertexIndices2[this.textureTriangleCount] = var10.textureTriangleVertexIndices2[var11];
+		                  this.textureTriangleVertexIndices3[this.textureTriangleCount] = var10.textureTriangleVertexIndices3[var11];
+		                  this.aShortArray2574[this.textureTriangleCount] = var10.aShortArray2574[var11];
+		                  this.aShortArray2575[this.textureTriangleCount] = var10.aShortArray2575[var11];
+		                  this.aShortArray2586[this.textureTriangleCount] = var10.aShortArray2586[var11];
+		                  this.aShortArray2577[this.textureTriangleCount] = var10.aShortArray2577[var11];
+		                  this.aByteArray2580[this.textureTriangleCount] = var10.aByteArray2580[var11];
+		                  this.aShortArray2578[this.textureTriangleCount] = var10.aShortArray2578[var11];
+		               }
+
+		               if(var12 == 2) {
+		                  this.texturePrimaryColors[this.textureTriangleCount] = var10.texturePrimaryColors[var11];
+		               }
+
+		               ++this.textureTriangleCount;
+		            }
+		         }
+		      }
+
+		   }
+	   
+	   final int method2725(ModelDefinition var1, int var2) {
+		      int var3 = -1;
+		      int var4 = var1.vertexPositionsX[var2];
+		      int var5 = var1.vertexPositionsY[var2];
+		      int var6 = var1.vertexPositionsZ[var2];
+
+		      for(int var7 = 0; var7 < this.vertexCount; ++var7) {
+		         if(var4 == this.vertexPositionsX[var7] && var5 == this.vertexPositionsY[var7] && var6 == this.vertexPositionsZ[var7]) {
+		            var3 = var7;
+		            break;
+		         }
+		      }
+
+		      if(var3 == -1) {
+		         this.vertexPositionsX[this.vertexCount] = var4;
+		         this.vertexPositionsY[this.vertexCount] = var5;
+		         this.vertexPositionsZ[this.vertexCount] = var6;
+		         if(var1.vertexSkins != null) {
+		            this.vertexSkins[this.vertexCount] = var1.vertexSkins[var2];
+		         }
+
+		         var3 = this.vertexCount++;
+		      }
+
+		      return var3;
 		   }
 }
