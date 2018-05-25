@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -18,9 +20,11 @@ import net.runelite.cache.definitions.ModelDefinition;
 import net.runelite.cache.definitions.NpcDefinition;
 import net.runelite.cache.definitions.ObjectDefinition;
 import net.runelite.cache.definitions.SequenceDefinition;
+import net.runelite.cache.definitions.SpotAnimDefinition;
 import net.runelite.cache.definitions.loaders.FrameLoader;
 import net.runelite.cache.definitions.loaders.ModelLoader;
 import net.runelite.cache.definitions.loaders.SequenceLoader;
+import net.runelite.cache.definitions.loaders.SpotAnimLoader;
 import net.runelite.cache.fs.Archive;
 import net.runelite.cache.fs.ArchiveFiles;
 import net.runelite.cache.fs.FSFile;
@@ -184,6 +188,23 @@ public class ModelExport
 		}
 	}
 	
+	private static SpotAnimDefinition[] getAnimations(Store store, int modelId) throws IOException {
+		Index index = store.getIndex(IndexType.CONFIGS);
+		Storage storage = store.getStorage();
+		Archive archive = index.getArchive(ConfigType.SPOTANIM.getId());
+
+		byte[] archiveData = storage.loadArchive(archive);
+		ArchiveFiles files = archive.getFiles(archiveData);
+		SpotAnimLoader loader = new SpotAnimLoader();
+		List<SpotAnimDefinition> list = new ArrayList<>();
+		for(FSFile f : files.getFiles()) {
+			SpotAnimDefinition anim = loader.load(f.getFileId(), f.getContents());
+			if(anim.modelId == modelId)
+				list.add(anim);
+		}
+		
+		return list.toArray(new SpotAnimDefinition[0]);
+	}
 	
 	
 	private static SequenceDefinition getAnim(Store store, int animId) throws IOException {
@@ -244,7 +265,14 @@ public class ModelExport
 		if(modelIds == null)
 			return;
 		
-		exportModel(store, frame, mergeModels(store, modelIds));
+		for(int m : modelIds) {
+			SpotAnimDefinition[] validAnimations = getAnimations(store, m);
+			for(SpotAnimDefinition d : validAnimations) {
+				System.out.println("Animation found: " + d.animationId + " - " + d.id);
+			}
+		}
+		
+		exportModel(store, frame, mergeModels(store, modelIds), tag);
 		
 //		for(int id : modelIds) {
 //			exportModel(store, frame, id, String.valueOf(id));
@@ -260,7 +288,10 @@ public class ModelExport
 		ModelDefinition[] models = new ModelDefinition[modelIds.length];
 		for(int i = 0; i < modelIds.length; i++) {
 			ModelDefinition model = getModel(store, modelIds[i]);
-			models[i] = model;
+			if(!isShadowModel(model))
+				models[i] = model;
+			else
+				System.out.println("Ignoring shadow model: " + model.id);
 		}
 		
 		merged = new ModelDefinition(models, models.length);
@@ -268,7 +299,7 @@ public class ModelExport
 		return merged;
 	}
 	
-	private static void exportModel(Store store, FrameDefinition frame, ModelDefinition model) throws IOException {
+	private static void exportModel(Store store, FrameDefinition frame, ModelDefinition model, String tag) throws IOException {
 		if(model == null)
 			return;
 		
@@ -288,13 +319,23 @@ public class ModelExport
 		//model.computeNormals();
 		//model.computeTextureUVCoordinates();
 		//model.rotate4();
-		ObjExporter exporter = new ObjExporter(tm, model);
-		try (PrintWriter objWriter = new PrintWriter(new FileWriter(new File(model.id + ".obj")));
-			PrintWriter mtlWriter = new PrintWriter(new FileWriter(new File(model.id + ".mtl"))))
+		ObjExporter exporter = new ObjExporter(tm, model, tag);
+		try (PrintWriter objWriter = new PrintWriter(new FileWriter(new File(tag + ".obj")));
+			PrintWriter mtlWriter = new PrintWriter(new FileWriter(new File(tag + ".mtl"))))
 		{
 			exporter.export(objWriter, mtlWriter);
-			System.out.println("Saved " + model.id + ".obj");
+			System.out.println("Saved " + tag + ".obj");
 		}
+	}
+	
+	private static boolean isShadowModel(ModelDefinition model) {
+		for(int i = 0; i < model.faceCount; i++) {
+			int a = model.faceAlphas != null ? model.faceAlphas[i] & 0xFF : 0;
+			short c = model.faceColors[i];
+			if(c != 0 || a == 0xFF)
+				return false;
+		}
+		return true;
 	}
 	
 	private static void exportModel(Store store, FrameDefinition frame, int modelId, String tag) throws IOException {
@@ -305,23 +346,7 @@ public class ModelExport
 		tm.load();
 		
 		ModelDefinition model = getModel(store, modelId);
-		//model.computeAnimationTables();
-		if(frame != null) {
-			model.animate(frame);
-			//model.computeNormals();
-		}
-		model.rotate4();
-		model.resize(sizeX, sizeY, sizeX);
-		model.computeNormals();
-		model.computeTextureUVCoordinates();
-		//model.rotate4();
-		ObjExporter exporter = new ObjExporter(tm, model);
-		try (PrintWriter objWriter = new PrintWriter(new FileWriter(new File(tag + ".obj")));
-			PrintWriter mtlWriter = new PrintWriter(new FileWriter(new File(tag + ".mtl"))))
-		{
-			exporter.export(objWriter, mtlWriter);
-			System.out.println("Saved " + tag + ".obj");
-		}
+		exportModel(store, frame, model, tag);
 	}
 	
 	private static ModelDefinition getModel(Store store, int modelId) throws IOException {

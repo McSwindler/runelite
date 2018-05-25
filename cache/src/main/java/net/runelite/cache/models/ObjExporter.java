@@ -34,11 +34,18 @@ public class ObjExporter
 {
 	private final TextureManager textureManager;
 	private final ModelDefinition model;
+	private final String fileName;
 
 	public ObjExporter(TextureManager textureManager, ModelDefinition model)
 	{
+		this(textureManager, model, String.valueOf(model.id));
+	}
+	
+	public ObjExporter(TextureManager textureManager, ModelDefinition model, String fileName)
+	{
 		this.textureManager = textureManager;
 		this.model = model;
+		this.fileName = fileName;
 	}
 
 	public void export(PrintWriter objWriter, PrintWriter mtlWriter)
@@ -46,7 +53,7 @@ public class ObjExporter
 		model.computeNormals();
 		model.computeTextureUVCoordinates();
 
-		objWriter.println("mtllib " + model.id + ".mtl");
+		objWriter.println("mtllib " + fileName + ".mtl");
 
 		objWriter.println("o runescapemodel");
 
